@@ -1,41 +1,3 @@
-// const express = require("express");
-// const bodyParser = require("body-parser");
-
-// const app = express();
-// const users = [];
-
-// app.use(bodyParser.json());
-
-// app.post("/signup", (req, res) => {
-//   const { firstName, userName, email, password } = req.body;
-//   if (!firstName || !userName || !email || !password) {
-//     return res.status(400).json({ error: "Please All field must be fill" });
-//   }
-
-//   const existingUser = users.find((user) => {
-//     user.email === email;
-//   });
-//   if (existingUser) {
-//     return res.status(401).json({ error: "User Already Exist" });
-//   }
-//   const newUser = {
-//     id: users.length + 1,
-//     firstName,
-//     userName,
-//     email,
-//     password,
-//   };
-//   users.push(newUser);
-//   res
-//     .status(201)
-//     .json({ message: "you Successfully Register", users: newUser });
-// });
-
-// const PORT = 3500;
-// app.listen(PORT, () => {
-//   console.log(`Server is Running now ${PORT}`);
-// });
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
@@ -50,8 +12,6 @@ const secretKey = crypto.randomBytes(32).toString("hex");
 app.post("/signup", (req, res) => {
   const { fullName, userName, email, password } = req.body;
 
-
-  
 
   const existingUser = users.find((user) => user.email === email);
   if (existingUser) {
