@@ -9,15 +9,17 @@
   "author": "gautam",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "chalk": "^5.3.0",
     "colors": "^1.4.0",
     "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.9",
     "expres": "^0.0.5",
     "express": "^4.18.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.2.3",
+    "mongoose": "^8.3.1",
     "nodemon": "^3.1.0",
     "validator": "^13.11.0"
   }

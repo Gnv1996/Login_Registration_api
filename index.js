@@ -1,61 +1,88 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+const connectDB = require("./db/config");
+
+connectDB();
 
 const app = express();
 app.use(bodyParser.json());
 
-const users = [];
-const secretKey = crypto.randomBytes(32).toString("hex");
+const userSchema = new mongoose.Schema({
+  fullName: String,
+  userName: String,
+  email: { type: String, unique: true },
+  password: String,
+});
 
-app.post("/signup", (req, res) => {
+const User = mongoose.model("User", userSchema);
+
+app.post("/signup", async (req, res) => {
   const { fullName, userName, email, password } = req.body;
 
-
-  const existingUser = users.find((user) => user.email === email);
-  if (existingUser) {
-    return res.status(401).json({ error: "User already exists" });
+  if (!fullName || !userName || !email || !password) {
+    return res.status(400).json({ error: "Please fill all the details." });
   }
 
-  const newUser = {
-    id: users.length + 1,
-    fullName,
-    userName,
-    email,
-    password,
-  };
+  try {
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res.status(401).json({ error: "User already exists." });
+    }
 
-  users.push(newUser);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      fullName,
+      userName,
+      email,
+      password: hashedPassword,
+    });
 
-  const token = jwt.sign({ userId: newUser.id }, secretKey, {
-    expiresIn: "1h",
-  });
+    await newUser.save();
 
-  return res
-    .status(201)
-    .json({ message: "User registered successfully", user: newUser, token });
+    res.status(201).json({
+      message: "You have successfully registered yourself.",
+      users: newUser,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error." });
+  }
 });
 
-app.post("/signin", (req, res) => {
+app.post("/login", async (req, res) => {
+  // Mark the function as async
   const { email, password } = req.body;
-
-  const user = users.find((user) => user.email === email);
-
-  if (!user) {
-    return res.status(401).json({ error: "Invalid credentials" });
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ error: "Please fill in email and password." });
   }
 
-  if (user.password !== password) {
-    return res.status(401).json({ error: "Invalid credentials" });
+  try {
+    // Assuming User is a Mongoose model, findOne is used to find a single document according to the condition
+    const user = await User.findOne({ email: email }); // Adjust according to your schema
+    if (!user) {
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
+
+    // If the password matches, proceed to generate a token or start a session
+    // This part depends on your authentication strategy (e.g., JWT, session)
+    res.json({ message: "Login successful!" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred during the login process." });
   }
-
-  const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "1h" });
-
-  return res.status(200).json({ message: "Login successful", user, token });
 });
 
-const PORT = 4500;
+const PORT = process.env.PORT || 4500;
 app.listen(PORT, () => {
-  console.log(`Server is running on PORT ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
