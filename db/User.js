@@ -6,4 +6,4 @@ const userSchema = mangoose.Schema({
   password: String,
 });
 
-module.exports=mangoose.model('users'.userSchema)
+module.exports = mangoose.model("users".userSchema);
