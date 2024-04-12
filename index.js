@@ -1,63 +1,22 @@
-// const express = require("express");
-// const bodyParser = require("body-parser");
-
-// const app = express();
-// const users = [];
-
-// app.use(bodyParser.json());
-
-// app.post("/signup", (req, res) => {
-//   const { firstName, userName, email, password } = req.body;
-//   if (!firstName || !userName || !email || !password) {
-//     return res.status(400).json({ error: "Please All field must be fill" });
-//   }
-
-//   const existingUser = users.find((user) => {
-//     user.email === email;
-//   });
-//   if (existingUser) {
-//     return res.status(401).json({ error: "User Already Exist" });
-//   }
-//   const newUser = {
-//     id: users.length + 1,
-//     firstName,
-//     userName,
-//     email,
-//     password,
-//   };
-//   users.push(newUser);
-//   res
-//     .status(201)
-//     .json({ message: "you Successfully Register", users: newUser });
-// });
-
-// const PORT = 3500;
-// app.listen(PORT, () => {
-//   console.log(`Server is Running now ${PORT}`);
-// });
-
 const express = require("express");
 const bodyParser = require("body-parser");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
 
 const app = express();
-app.use(bodyParser.json());
-
 const users = [];
-const secretKey = crypto.randomBytes(32).toString("hex");
 
+app.use(bodyParser.json());
 app.post("/signup", (req, res) => {
   const { fullName, userName, email, password } = req.body;
 
-
-  
-
+  if (!fullName || !userName || !email || !password) {
+    return res
+      .status(400)
+      .json({ error: "Please filled all detail correctly" });
+  }
   const existingUser = users.find((user) => user.email === email);
   if (existingUser) {
-    return res.status(401).json({ error: "User already exists" });
+    return res.status(400).json({ error: "User Already Exist" });
   }
-
   const newUser = {
     id: users.length + 1,
     fullName,
@@ -67,35 +26,32 @@ app.post("/signup", (req, res) => {
   };
 
   users.push(newUser);
-
-  const token = jwt.sign({ userId: newUser.id }, secretKey, {
-    expiresIn: "1h",
-  });
-
-  return res
+  res
     .status(201)
-    .json({ message: "User registered successfully", user: newUser, token });
+    .json({ message: "You Register successfully", users: newUser });
 });
 
-app.post("/signin", (req, res) => {
+app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  const user = users.find((user) => user.email === email);
-
-  if (!user) {
-    return res.status(401).json({ error: "Invalid credentials" });
+  if (!email) {
+    return res.status(400).json({ error: "Please filled valid email Address" });
+  }
+  if (!password) {
+    return res.status(400).json({ error: "Please filled valid Password" });
   }
 
-  if (user.password !== password) {
-    return res.status(401).json({ error: "Invalid credentials" });
+  const existUser = users.find(
+    (user) => user.email === email && user.password === password
+  );
+
+  if (!existUser) {
+    return res.status(404).json({ error: "Email and password is not exist" });
   }
-
-  const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: "1h" });
-
-  return res.status(200).json({ message: "Login successful", user, token });
+  return res.status(201).json({ message: "You successfully Login", users });
 });
 
-const PORT = 4500;
+const PORT = 4000;
 app.listen(PORT, () => {
-  console.log(`Server is running on PORT ${PORT}`);
+  console.log(`Server is now Working ${PORT}`);
 });
